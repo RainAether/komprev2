@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basis Data — Ujian Kompre</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0fdf4;
+    --surface: #ffffff;
+    --card: #f8fafc;
+    --border: #d1fae5;
+    --border2: #e2e8f0;
+    --accent: #059669;
+    --accent-light: #d1fae5;
+    --accent2: #0ea5e9;
+    --accent2-light: #e0f2fe;
+    --accent3: #f59e0b;
+    --accent3-light: #fef3c7;
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --text: #0f172a;
+    --muted: #64748b;
+    --code-bg: #0f172a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #065f46 0%, #047857 40%, #059669 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #a7f3d0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    animation: fadeDown 0.5s ease;
+  }
+
+  header h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.03em;
+    animation: fadeDown 0.5s 0.1s ease both;
+  }
+
+  header p {
+    color: #a7f3d0;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    animation: fadeDown 0.5s 0.2s ease both;
+  }
+
+  .countdown-bar {
+    margin-top: 1.5rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 0.8rem 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    animation: fadeDown 0.5s 0.3s ease both;
+  }
+
+  .pulse-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #fbbf24;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+  /* INDIKATOR PILLS */
+  .indikator-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border2);
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .ind-pill {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .ind-1 { background: var(--purple-light); color: var(--purple); }
+  .ind-2 { background: var(--accent2-light); color: var(--accent2); }
+  .ind-3 { background: var(--accent-light); color: var(--accent); }
+  .ind-4 { background: var(--accent3-light); color: #b45309; }
+
+  .ind-pill:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+  /* MAIN */
+  main { max-width: 860px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 3.5rem;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .ind-badge {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #fff;
+  }
+  .bg-purple { background: var(--purple); }
+  .bg-blue   { background: var(--accent2); }
+  .bg-green  { background: var(--accent); }
+  .bg-amber  { background: var(--accent3); }
+
+  .section-title-wrap { flex: 1; }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .section-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    font-weight: 500;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 1.3rem 1.5rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); border-color: var(--border); }
+
+  .card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-title .icon { font-size: 1rem; }
+
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .card ul {
+    list-style: none;
+    margin-top: 0.6rem;
+  }
+
+  .card ul li {
+    font-size: 0.86rem;
+    color: var(--text);
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    gap: 0.6rem;
+    line-height: 1.5;
+  }
+
+  .card ul li:last-child { border-bottom: none; }
+
+  .card ul li::before {
+    content: '▸';
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* HIGHLIGHT BOX */
+  .highlight {
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+    font-size: 0.86rem;
+    line-height: 1.7;
+  }
+
+  .h-purple { background: var(--purple-light); border-left: 3px solid var(--purple); color: #4c1d95; }
+  .h-green  { background: var(--accent-light); border-left: 3px solid var(--accent); color: #064e3b; }
+  .h-blue   { background: var(--accent2-light); border-left: 3px solid var(--accent2); color: #075985; }
+  .h-amber  { background: var(--accent3-light); border-left: 3px solid var(--accent3); color: #78350f; }
+  .h-red    { background: var(--red-light); border-left: 3px solid var(--red); color: #7f1d1d; }
+
+  .highlight strong { font-weight: 700; }
+
+  /* CODE */
+  .code-wrap {
+    background: var(--code-bg);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .code-top {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1e293b;
+    background: #0f172a;
+  }
+
+  .dots { display: flex; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dr { background: #ef4444; }
+  .dy { background: #f59e0b; }
+  .dg { background: #10b981; }
+
+  .code-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.65rem;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  pre {
+    padding: 1.2rem 1.5rem;
+    overflow-x: auto;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.78rem;
+    line-height: 1.9;
+    color: #e2e8f0;
+  }
+
+  .kw  { color: #f472b6; font-weight: 600; }
+  .fn  { color: #67e8f9; }
+  .str { color: #a3e635; }
+  .num { color: #c084fc; }
+  .col { color: #86efac; }
+  .tbl { color: #fcd34d; }
+  .cmt { color: #475569; font-style: italic; }
+  .op  { color: #f472b6; }
+  .ref { color: #fb923c; }
+
+  /* ERD VISUAL */
+  .erd-container {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+  }
+
+  .erd {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    min-width: 600px;
+    position: relative;
+  }
+
+  .erd-entity {
+    background: var(--purple-light);
+    border: 2px solid var(--purple);
+    border-radius: 10px;
+    min-width: 140px;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .erd-entity-name {
+    background: var(--purple);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .erd-attr {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+    color: #4c1d95;
+    border-bottom: 1px solid #ddd6fe;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Fira Code', monospace;
+  }
+
+  .erd-attr.pk {
+    background: rgba(124,58,237,0.08);
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  .erd-attr.fk { color: #0ea5e9; }
+
+  .erd-rel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding-top: 3rem;
+    flex-shrink: 0;
+  }
+
+  .erd-rel-box {
+    background: var(--accent3-light);
+    border: 2px solid var(--accent3);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    min-width: 60px;
+  }
+
+  .erd-line {
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  /* NORMALISASI TABLE */
+  .norm-table-wrap { overflow-x: auto; margin-bottom: 0.8rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+
+  th {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--border2);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  tr:nth-child(even) td { background: var(--card); }
+  tr:hover td { background: var(--accent-light); }
+
+  .td-pk { color: var(--purple); font-weight: 700; font-family: 'Fira Code', monospace; }
+  .td-fk { color: var(--accent2); font-weight: 600; font-family: 'Fira Code', monospace; }
+  .td-bad { background: #fee2e2 !important; color: #b91c1c; }
+  .td-good { background: #d1fae5 !important; color: #065f46; font-weight: 600; }
+
+  /* GRID 2 */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media(max-width:600px){ .grid2{grid-template-columns:1fr;} }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: 0.3rem;
+  }
+  .tag-pk { background: var(--purple-light); color: var(--purple); }
+  .tag-fk { background: var(--accent2-light); color: var(--accent2); }
+  .tag-nn { background: var(--red-light); color: var(--red); }
+
+  /* RINGKASAN UJIAN */
+  .cheat-sheet {
+    background: linear-gradient(135deg, #065f46, #047857);
+    border-radius: 20px;
+    padding: 2rem;
+    color: #fff;
+    margin-top: 3rem;
+  }
+
+  .cheat-sheet h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media(max-width:600px){ .cheat-grid{grid-template-columns:1fr;} }
+
+  .cheat-item {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .cheat-item h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #a7f3d0;
+    margin-bottom: 0.6rem;
+  }
+
+  .cheat-item ul { list-style: none; }
+  .cheat-item ul li {
+    font-size: 0.82rem;
+    padding: 0.2rem 0;
+    display: flex;
+    gap: 0.5rem;
+    line-height: 1.5;
+  }
+  .cheat-item ul li::before { content: '✓'; color: #6ee7b7; flex-shrink: 0; }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-15px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">📄 Ujian Komprehensif · SI · UIN Raden Intan Lampung</div>
+  <h1>⚡ Basis Data</h1>
+  <p>Ringkasan lengkap 4 Indikator sesuai SK Dekan No. 345 Tahun 2026</p>
+  <div class="countdown-bar">
+    <div class="pulse-dot"></div>
+    Waktu sangat singkat — fokus pada poin penting di tiap indikator!
+  </div>
+</header>
+
+<nav class="indikator-bar">
+  <a href="#ind1" class="ind-pill ind-1">📐 Indikator 1 · ERD & Relasi</a>
+  <a href="#ind2" class="ind-pill ind-2">🔢 Indikator 2 · Normalisasi 3NF</a>
+  <a href="#ind3" class="ind-pill ind-3">💻 Indikator 3 · DDL & DML</a>
+  <a href="#ind4" class="ind-pill ind-4">🔑 Indikator 4 · PK, FK & Integrity</a>
+</nav>
+
+<main>
+
+  <!-- ===== INDIKATOR 1: ERD ===== -->
+  <section class="section" id="ind1">
+    <div class="section-header">
+      <div class="ind-badge bg-purple">1</div>
+      <div class="section-title-wrap">
+        <h2 class="section-title">Model Data Konseptual (ERD)</h2>
+        <p class="section-sub">Entitas, Atribut, Relasi — minim redundansi</p>
+      </div>
+    </div>
+
+    <div class="highlight h-purple">
+      <strong>💡 Kata kunci ujian:</strong> Sebutkan entitas, tentukan atribut + primary key, gambar relasi beserta kardinalitasnya (1:1, 1:N, M:N).
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🧩</span> Komponen ERD yang Harus Hafal</div>
+      <ul>
+        <li><strong>Entitas</strong> — objek/benda nyata yang disimpan datanya. Contoh: Mahasiswa, Mata Kuliah, Dosen.</li>
+        <li><strong>Atribut</strong> — properti dari entitas. Contoh: nim, nama, alamat. Atribut yang menjadi identifier disebut <strong>Primary Key</strong>.</li>
+        <li><strong>Relasi</strong> — hubungan antar entitas. Ditulis dengan kata kerja. Contoh: Mahasiswa <em>mengambil</em> MataKuliah.</li>
+        <li><strong>Kardinalitas</strong> — berapa banyak hubungan yang bisa terjadi (1:1, 1:N, M:N).</li>
+      </ul>
+    </div>
+
+    <!-- ERD Visual -->
+    <div class="erd-container">
+      <p style="font-size:0.8rem;font-weight:700;color:var(--muted);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.06em">📊 Contoh ERD: Sistem Akademik</p>
+      <div class="erd">
+        <div class="erd-entity">
+          <div class="erd-entity-name">Mahasiswa</div>
+          <div class="erd-attr pk">🔑 nim (PK)</div>
+          <div class="erd-attr">nama</div>
+          <div class="erd-attr">alamat</div>
+          <div class="erd-attr">email</div>
+        </div>
+
+        <div class="erd-rel">
+          <div class="erd-line">M</div>
+          <div class="erd-rel-box">Mengambil</div>
+          <div class="erd-line">N</div>
+        </div>
+
+        <div class="erd-entity">
+          <div class="erd-entity-name">Mata Kuliah</div>
+          <div class="erd-attr pk">🔑 kode_mk (PK)</div>
+          <div class="erd-attr">nama_mk</div>
+          <div class="erd-attr">sks</div>
+          <div class="erd-attr fk">🔗 dosen_id (FK)</div>
+        </div>
+
+        <div class="erd-rel">
+          <div class="erd-line">1</div>
+          <div class="erd-rel-box">Mengajar</div>
+          <div class="erd-line">N</div>
+        </div>
+
+        <div class="erd-entity">
+          <div class="erd-entity-name">Dosen</div>
+          <div class="erd-attr pk">🔑 dosen_id (PK)</div>
+          <div class="erd-attr">nama_dosen</div>
+          <div class="erd-attr">jabatan</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="icon">1️⃣</span> Relasi 1:1 (Satu ke Satu)</div>
+        <p>Satu record di tabel A hanya berhubungan dengan SATU record di tabel B.</p>
+        <div class="highlight h-amber" style="margin-top:0.7rem">Contoh: Pegawai ↔ KartuKaryawan</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🔢</span> Relasi 1:N (Satu ke Banyak)</div>
+        <p>Satu record di tabel A berhubungan dengan BANYAK record di tabel B.</p>
+        <div class="highlight h-amber" style="margin-top:0.7rem">Contoh: Dosen → Mahasiswa (1 dosen punya banyak mahasiswa)</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🔀</span> Relasi M:N (Banyak ke Banyak)</div>
+        <p>Banyak record di A berhubungan dengan banyak record di B. Perlu <strong>tabel perantara</strong>!</p>
+        <div class="highlight h-amber" style="margin-top:0.7rem">Contoh: Mahasiswa ↔ MataKuliah → tabel KRS</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">⚠️</span> Redundansi — Harus Dihindari!</div>
+        <p>Data yang sama disimpan berulang-ulang. Solusinya: pisahkan ke tabel berbeda dan hubungkan dengan relasi.</p>
+        <div class="highlight h-red" style="margin-top:0.7rem">Simpan nama_dosen di tabel MK → redundan! Gunakan FK ke tabel Dosen.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== INDIKATOR 2: NORMALISASI ===== -->
+  <section class="section" id="ind2">
+    <div class="section-header">
+      <div class="ind-badge bg-blue">2</div>
+      <div class="section-title-wrap">
+        <h2 class="section-title">Normalisasi Data (1NF → 2NF → 3NF)</h2>
+        <p class="section-sub">Proses sistematis menghilangkan redundansi dan anomali</p>
+      </div>
+    </div>
+
+    <div class="highlight h-blue">
+      <strong>💡 Cara jawab di ujian:</strong> Tunjukkan tabel awal yang bermasalah → jelaskan masalahnya → ubah step by step sampai 3NF.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🔴</span> Tabel SEBELUM Normalisasi (Unnormalized)</div>
+      <div class="norm-table-wrap">
+        <table>
+          <tr><th>nim</th><th>nama</th><th>kode_mk</th><th>nama_mk</th><th>nilai</th><th>nama_dosen</th></tr>
+          <tr>
+            <td class="td-pk">M001</td><td>Budi</td>
+            <td>BD101</td><td class="td-bad">Basis Data</td><td>A</td><td class="td-bad">Dr. Andi</td>
+          </tr>
+          <tr>
+            <td class="td-pk">M001</td><td class="td-bad">Budi</td>
+            <td>SI201</td><td class="td-bad">Sistem Informasi</td><td>B</td><td class="td-bad">Dr. Siti</td>
+          </tr>
+          <tr>
+            <td class="td-pk">M002</td><td>Rina</td>
+            <td>BD101</td><td class="td-bad">Basis Data</td><td>A</td><td class="td-bad">Dr. Andi</td>
+          </tr>
+        </table>
+      </div>
+      <div class="highlight h-red" style="margin-top:0.8rem">
+        <strong>Masalah:</strong> nama dosen & nama MK disimpan berulang. Kalau nama dosen berubah, harus update banyak baris = <strong>update anomaly!</strong>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="icon">1️⃣</span> 1NF — First Normal Form</div>
+        <ul>
+          <li>Semua nilai harus <strong>atomik</strong> (tidak boleh ada nilai berupa list/grup)</li>
+          <li>Setiap baris harus unik (ada primary key)</li>
+          <li>Tidak ada kolom berulang (misal: mk1, mk2, mk3)</li>
+        </ul>
+        <div class="highlight h-blue" style="margin-top:0.6rem">
+          Ciri pelanggaran: ada sel yang berisi "BD101, SI201" dalam 1 sel → pecah jadi baris terpisah!
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">2️⃣</span> 2NF — Second Normal Form</div>
+        <ul>
+          <li>Sudah 1NF</li>
+          <li>Tidak ada <strong>partial dependency</strong> (ketergantungan sebagian)</li>
+          <li>Setiap atribut non-key harus bergantung pada <strong>seluruh</strong> primary key</li>
+        </ul>
+        <div class="highlight h-amber" style="margin-top:0.6rem">
+          Masalah muncul jika PK <strong>komposit</strong>. Contoh: PK = (nim, kode_mk), tapi nama_mk hanya bergantung ke kode_mk saja.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">3️⃣</span> 3NF — Third Normal Form (TARGET UJIAN)</div>
+      <ul>
+        <li>Sudah 2NF</li>
+        <li>Tidak ada <strong>transitive dependency</strong> (ketergantungan transitif)</li>
+        <li>Atribut non-key tidak boleh bergantung ke atribut non-key lain</li>
+      </ul>
+    </div>
+
+    <p style="font-size:0.85rem;font-weight:700;color:var(--accent);margin-bottom:0.8rem;text-transform:uppercase;letter-spacing:0.05em">✅ Hasil Akhir Setelah Normalisasi 3NF:</p>
+
+    <div class="grid2">
+      <div>
+        <p style="font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.4rem">Tabel MAHASISWA</p>
+        <div class="norm-table-wrap">
+          <table>
+            <tr><th>nim</th><th>nama</th></tr>
+            <tr><td class="td-pk td-good">M001</td><td>Budi</td></tr>
+            <tr><td class="td-pk td-good">M002</td><td>Rina</td></tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.4rem">Tabel MATAKULIAH</p>
+        <div class="norm-table-wrap">
+          <table>
+            <tr><th>kode_mk</th><th>nama_mk</th><th>dosen_id</th></tr>
+            <tr><td class="td-pk td-good">BD101</td><td>Basis Data</td><td class="td-fk">D01</td></tr>
+            <tr><td class="td-pk td-good">SI201</td><td>Sistem Informasi</td><td class="td-fk">D02</td></tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.4rem">Tabel DOSEN</p>
+        <div class="norm-table-wrap">
+          <table>
+            <tr><th>dosen_id</th><th>nama_dosen</th></tr>
+            <tr><td class="td-pk td-good">D01</td><td>Dr. Andi</td></tr>
+            <tr><td class="td-pk td-good">D02</td><td>Dr. Siti</td></tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.4rem">Tabel KRS (Perantara M:N)</p>
+        <div class="norm-table-wrap">
+          <table>
+            <tr><th>nim</th><th>kode_mk</th><th>nilai</th></tr>
+            <tr><td class="td-fk">M001</td><td class="td-fk">BD101</td><td>A</td></tr>
+            <tr><td class="td-fk">M001</td><td class="td-fk">SI201</td><td>B</td></tr>
+            <tr><td class="td-fk">M002</td><td class="td-fk">BD101</td><td>A</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight h-green">
+      <strong>✅ Hasil 3NF:</strong> Tidak ada redundansi! Kalau nama dosen berubah, cukup update 1 baris di tabel Dosen. Semua tabel bersih.
+    </div>
+  </section>
+
+  <!-- ===== INDIKATOR 3: DDL & DML ===== -->
+  <section class="section" id="ind3">
+    <div class="section-header">
+      <div class="ind-badge bg-green">3</div>
+      <div class="section-title-wrap">
+        <h2 class="section-title">DDL & DML — JOIN & Subquery</h2>
+        <p class="section-sub">Implementasi perintah SQL secara tepat dan efisien</p>
+      </div>
+    </div>
+
+    <div class="highlight h-green">
+      <strong>💡 Bedakan:</strong> <strong>DDL</strong> = mendefinisikan <em>struktur</em> (CREATE, ALTER, DROP). <strong>DML</strong> = memanipulasi <em>data</em> (SELECT, INSERT, UPDATE, DELETE).
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title" style="color:var(--purple)"><span class="icon">🏗️</span> DDL — Data Definition Language</div>
+        <ul>
+          <li><strong>CREATE TABLE</strong> — membuat tabel baru</li>
+          <li><strong>ALTER TABLE</strong> — ubah struktur tabel</li>
+          <li><strong>DROP TABLE</strong> — hapus tabel permanen</li>
+          <li><strong>CREATE INDEX</strong> — membuat index untuk mempercepat query</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent2)"><span class="icon">⚙️</span> DML — Data Manipulation Language</div>
+        <ul>
+          <li><strong>SELECT</strong> — mengambil/membaca data</li>
+          <li><strong>INSERT</strong> — menambah data baru</li>
+          <li><strong>UPDATE</strong> — mengubah data</li>
+          <li><strong>DELETE</strong> — menghapus data</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- DDL -->
+    <p style="font-size:0.8rem;font-weight:700;color:var(--purple);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em">🏗️ Contoh DDL</p>
+    <div class="code-wrap">
+      <div class="code-top"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="code-label">DDL — CREATE TABLE</span></div>
+      <pre><span class="kw">CREATE TABLE</span> <span class="tbl">mahasiswa</span> (
+  <span class="col">nim</span>     <span class="fn">VARCHAR</span>(<span class="num">10</span>)  <span class="kw">PRIMARY KEY</span>,
+  <span class="col">nama</span>    <span class="fn">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+  <span class="col">alamat</span>  <span class="fn">TEXT</span>,
+  <span class="col">email</span>   <span class="fn">VARCHAR</span>(<span class="num">100</span>) <span class="kw">UNIQUE</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">krs</span> (
+  <span class="col">nim</span>      <span class="fn">VARCHAR</span>(<span class="num">10</span>),
+  <span class="col">kode_mk</span>  <span class="fn">VARCHAR</span>(<span class="num">10</span>),
+  <span class="col">nilai</span>    <span class="fn">CHAR</span>(<span class="num">1</span>),
+  <span class="kw">PRIMARY KEY</span> (<span class="col">nim</span>, <span class="col">kode_mk</span>),              <span class="cmt">-- PK komposit</span>
+  <span class="kw">FOREIGN KEY</span> (<span class="col">nim</span>)     <span class="kw">REFERENCES</span> <span class="ref">mahasiswa</span>(<span class="col">nim</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="col">kode_mk</span>) <span class="kw">REFERENCES</span> <span class="ref">matakuliah</span>(<span class="col">kode_mk</span>)
+);</pre>
+    </div>
+
+    <!-- JOIN -->
+    <p style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em;margin-top:1rem">🔗 JOIN — Menggabungkan Tabel</p>
+    <div class="code-wrap">
+      <div class="code-top"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="code-label">DML — INNER JOIN & LEFT JOIN</span></div>
+      <pre><span class="cmt">-- INNER JOIN: hanya tampilkan yang ada di KEDUA tabel</span>
+<span class="kw">SELECT</span>
+  <span class="tbl">m</span>.<span class="col">nim</span>, <span class="tbl">m</span>.<span class="col">nama</span>,
+  <span class="tbl">mk</span>.<span class="col">nama_mk</span>,
+  <span class="tbl">k</span>.<span class="col">nilai</span>
+<span class="kw">FROM</span>       <span class="tbl">mahasiswa</span>  <span class="tbl">m</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">krs</span>        <span class="tbl">k</span>   <span class="kw">ON</span> <span class="tbl">m</span>.<span class="col">nim</span>     <span class="op">=</span> <span class="tbl">k</span>.<span class="col">nim</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">matakuliah</span> <span class="tbl">mk</span>  <span class="kw">ON</span> <span class="tbl">k</span>.<span class="col">kode_mk</span> <span class="op">=</span> <span class="tbl">mk</span>.<span class="col">kode_mk</span>;
+
+<span class="cmt">-- LEFT JOIN: tampilkan SEMUA mahasiswa,</span>
+<span class="cmt">-- meski belum ada KRS (nilai = NULL)</span>
+<span class="kw">SELECT</span> <span class="tbl">m</span>.<span class="col">nama</span>, <span class="tbl">k</span>.<span class="col">kode_mk</span>, <span class="tbl">k</span>.<span class="col">nilai</span>
+<span class="kw">FROM</span>      <span class="tbl">mahasiswa</span> <span class="tbl">m</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">krs</span>       <span class="tbl">k</span>  <span class="kw">ON</span> <span class="tbl">m</span>.<span class="col">nim</span> <span class="op">=</span> <span class="tbl">k</span>.<span class="col">nim</span>;</pre>
+    </div>
+
+    <!-- SUBQUERY -->
+    <p style="font-size:0.8rem;font-weight:700;color:var(--accent3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em;margin-top:1rem">🔍 Subquery — Query di Dalam Query</p>
+    <div class="code-wrap">
+      <div class="code-top"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="code-label">DML — SUBQUERY</span></div>
+      <pre><span class="cmt">-- Tampilkan mahasiswa yang punya nilai A</span>
+<span class="kw">SELECT</span> <span class="col">nama</span>
+<span class="kw">FROM</span>   <span class="tbl">mahasiswa</span>
+<span class="kw">WHERE</span>  <span class="col">nim</span> <span class="kw">IN</span> (
+  <span class="kw">SELECT</span> <span class="col">nim</span> <span class="kw">FROM</span> <span class="tbl">krs</span> <span class="kw">WHERE</span> <span class="col">nilai</span> <span class="op">=</span> <span class="str">'A'</span>
+);
+
+<span class="cmt">-- Mahasiswa yang IPK-nya di atas rata-rata</span>
+<span class="kw">SELECT</span> <span class="col">nama</span>
+<span class="kw">FROM</span>   <span class="tbl">mahasiswa</span>
+<span class="kw">WHERE</span>  <span class="col">ipk</span> <span class="op">></span> (
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(<span class="col">ipk</span>) <span class="kw">FROM</span> <span class="tbl">mahasiswa</span>
+);</pre>
+    </div>
+
+    <div class="highlight h-amber">
+      <strong>⚠️ Perbedaan JOIN vs Subquery:</strong> JOIN lebih efisien untuk menggabungkan tabel dan menampilkan kolom dari banyak tabel. Subquery cocok untuk kondisi filter yang bergantung pada hasil query lain.
+    </div>
+  </section>
+
+  <!-- ===== INDIKATOR 4: PK FK INTEGRITY ===== -->
+  <section class="section" id="ind4">
+    <div class="section-header">
+      <div class="ind-badge bg-amber">4</div>
+      <div class="section-title-wrap">
+        <h2 class="section-title">Primary Key, Foreign Key & Referential Integrity</h2>
+        <p class="section-sub">Konsep kunci perancangan basis data yang robust</p>
+      </div>
+    </div>
+
+    <div class="highlight h-amber">
+      <strong>💡 Ini sering keluar ujian!</strong> Hafal definisi, fungsi, dan contohnya. Jelaskan juga apa yang terjadi jika Referential Integrity dilanggar.
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title" style="color:var(--purple)"><span class="icon">🔑</span> Primary Key (PK)</div>
+        <ul>
+          <li>Kolom (atau gabungan kolom) yang <strong>mengidentifikasi setiap baris secara unik</strong></li>
+          <li>Nilai PK tidak boleh <strong>NULL</strong> dan tidak boleh <strong>duplikat</strong></li>
+          <li>Setiap tabel hanya boleh punya <strong>1 Primary Key</strong></li>
+          <li>Bisa komposit: PK terdiri dari 2+ kolom (contoh: nim + kode_mk)</li>
+        </ul>
+        <div class="highlight h-purple" style="margin-top:0.8rem">
+          <code>nim VARCHAR(10) <strong>PRIMARY KEY</strong></code>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent2)"><span class="icon">🔗</span> Foreign Key (FK)</div>
+        <ul>
+          <li>Kolom yang <strong>merujuk ke Primary Key tabel lain</strong></li>
+          <li>Digunakan untuk membuat <strong>relasi antar tabel</strong></li>
+          <li>Nilainya harus ada di tabel yang dirujuk (atau NULL)</li>
+          <li>Tabel yang punya FK = <strong>child table</strong>; yang dirujuk = <strong>parent table</strong></li>
+        </ul>
+        <div class="highlight h-blue" style="margin-top:0.8rem">
+          <code>FOREIGN KEY (nim) <strong>REFERENCES</strong> mahasiswa(nim)</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--accent)"><span class="icon">🛡️</span> Referential Integrity — Menjaga Konsistensi Data</div>
+      <p>Aturan yang memastikan <strong>nilai Foreign Key selalu valid</strong> — tidak boleh menunjuk ke baris yang tidak ada di parent table.</p>
+      <ul style="margin-top:0.8rem">
+        <li><strong>INSERT gagal</strong> — tidak bisa tambah data di child table jika nilai FK tidak ada di parent</li>
+        <li><strong>DELETE gagal</strong> — tidak bisa hapus data di parent table jika masih ada child yang merujuk</li>
+        <li><strong>UPDATE CASCADE</strong> — jika PK parent diubah, FK di child ikut berubah otomatis</li>
+        <li><strong>DELETE CASCADE</strong> — jika parent dihapus, semua child terkait ikut terhapus</li>
+      </ul>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-top"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="code-label">Contoh Implementasi FK + Referential Integrity</span></div>
+      <pre><span class="kw">CREATE TABLE</span> <span class="tbl">krs</span> (
+  <span class="col">nim</span>     <span class="fn">VARCHAR</span>(<span class="num">10</span>),
+  <span class="col">kode_mk</span> <span class="fn">VARCHAR</span>(<span class="num">10</span>),
+  <span class="col">nilai</span>   <span class="fn">CHAR</span>(<span class="num">1</span>),
+
+  <span class="kw">PRIMARY KEY</span> (<span class="col">nim</span>, <span class="col">kode_mk</span>),
+
+  <span class="kw">FOREIGN KEY</span> (<span class="col">nim</span>)
+    <span class="kw">REFERENCES</span> <span class="ref">mahasiswa</span>(<span class="col">nim</span>)
+    <span class="kw">ON DELETE CASCADE</span>     <span class="cmt">-- hapus mahasiswa → KRS ikut terhapus</span>
+    <span class="kw">ON UPDATE CASCADE</span>,    <span class="cmt">-- update nim → FK di KRS ikut update</span>
+
+  <span class="kw">FOREIGN KEY</span> (<span class="col">kode_mk</span>)
+    <span class="kw">REFERENCES</span> <span class="ref">matakuliah</span>(<span class="col">kode_mk</span>)
+    <span class="kw">ON DELETE RESTRICT</span>    <span class="cmt">-- TOLAK hapus MK jika masih ada di KRS</span>
+);</pre>
+    </div>
+
+    <div class="grid2">
+      <div class="highlight h-red">
+        <strong>❌ Pelanggaran Referential Integrity:</strong><br>
+        INSERT INTO krs VALUES ('M999', 'BD101', 'A') → <strong>ERROR!</strong> Karena nim 'M999' tidak ada di tabel mahasiswa.
+      </div>
+      <div class="highlight h-green">
+        <strong>✅ Contoh Valid:</strong><br>
+        INSERT INTO krs VALUES ('M001', 'BD101', 'A') → <strong>SUKSES!</strong> Karena M001 ada di tabel mahasiswa dan BD101 ada di matakuliah.
+      </div>
+    </div>
+  </section>
+
+  <!-- CHEAT SHEET -->
+  <div class="cheat-sheet">
+    <h2>🚀 Ringkasan Cepat Sebelum Ujian</h2>
+    <div class="cheat-grid">
+      <div class="cheat-item">
+        <h3>📐 Indikator 1 — ERD</h3>
+        <ul>
+          <li>Entitas = objek, Atribut = propertinya</li>
+          <li>Primary Key = identifier unik tiap baris</li>
+          <li>1:1 · 1:N · M:N (M:N butuh tabel perantara)</li>
+          <li>Hindari redundansi = pisahkan ke tabel beda</li>
+        </ul>
+      </div>
+      <div class="cheat-item">
+        <h3>🔢 Indikator 2 — Normalisasi</h3>
+        <ul>
+          <li>1NF = atomik, ada PK, tidak ada kolom ganda</li>
+          <li>2NF = tidak ada partial dependency</li>
+          <li>3NF = tidak ada transitive dependency</li>
+          <li>Hasil 3NF = tabel kecil-kecil, bersih</li>
+        </ul>
+      </div>
+      <div class="cheat-item">
+        <h3>💻 Indikator 3 — DDL & DML</h3>
+        <ul>
+          <li>DDL = struktur: CREATE, ALTER, DROP</li>
+          <li>DML = data: SELECT, INSERT, UPDATE, DELETE</li>
+          <li>INNER JOIN = hanya yang cocok di kedua tabel</li>
+          <li>LEFT JOIN = semua kiri + yang cocok saja di kanan</li>
+        </ul>
+      </div>
+      <div class="cheat-item">
+        <h3>🔑 Indikator 4 — PK, FK, Integrity</h3>
+        <ul>
+          <li>PK = unik, tidak NULL, identifikasi baris</li>
+          <li>FK = merujuk ke PK tabel lain</li>
+          <li>Referential Integrity = FK harus valid</li>
+          <li>CASCADE = ikut update/hapus otomatis</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const sections = document.querySelectorAll('.section');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.05 });
+  sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

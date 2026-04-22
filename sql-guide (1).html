@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Belajar Mudah</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #1a0a3e 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 80% 100%, #0a2a3a 0%, transparent 60%);
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.2));
+    border: 1px solid rgba(124,58,237,0.4);
+    color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #67e8f9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 500px;
+    margin-top: 1rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .db-schema {
+    margin-top: 3rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .table-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .table-pill:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+  .table-pill .tname {
+    color: var(--accent3);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .table-pill .tcol { color: var(--muted); }
+  .table-pill .tcol span { color: var(--accent2); }
+
+  /* MAIN CONTENT */
+  main { max-width: 900px; margin: 0 auto; padding: 4rem 1.5rem; }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 4rem;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag-select { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+  .tag-ddl { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-dml { background: rgba(6,182,212,0.15); color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); }
+  .tag-special { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+
+  .desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+    line-height: 1.7;
+  }
+
+  .desc strong { color: var(--accent3); font-weight: 600; }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .code-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .dots { display: flex; gap: 0.4rem; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ef4444; }
+  .dot-y { background: #f59e0b; }
+  .dot-g { background: #10b981; }
+
+  .code-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  pre {
+    padding: 1.2rem 1.5rem;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+  }
+
+  .kw { color: #ff79c6; font-weight: 700; }
+  .fn { color: #8be9fd; }
+  .str { color: #f1fa8c; }
+  .num { color: #bd93f9; }
+  .col { color: #50fa7b; }
+  .tbl { color: #ffb86c; }
+  .cmt { color: #6272a4; font-style: italic; }
+  .op  { color: #ff79c6; }
+
+  /* OUTPUT TABLE */
+  .output-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .output-header {
+    padding: 0.6rem 1rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .output-header::before {
+    content: '▶';
+    font-size: 0.5rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  th {
+    background: rgba(124,58,237,0.1);
+    color: #a78bfa;
+    font-weight: 700;
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.55rem 1rem;
+    border-bottom: 1px solid rgba(42,42,58,0.5);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(124,58,237,0.05); }
+
+  .null-val { color: var(--muted); font-style: italic; }
+  .num-val { color: #bd93f9; }
+  .str-val { color: #f1fa8c; }
+  .id-val { color: #8be9fd; }
+
+  /* INFO BOX */
+  .info-box {
+    background: rgba(6,182,212,0.05);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+    color: #a5f3fc;
+    margin-top: 0.8rem;
+    line-height: 1.6;
+  }
+
+  .info-box::before {
+    content: '💡 ';
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 3rem 0;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-item {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-item:hover {
+    color: var(--text);
+    border-color: var(--border);
+    background: var(--card);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    pre { font-size: 0.7rem; }
+    th, td { padding: 0.5rem 0.7rem; font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">📚 Panduan SQL · Bahasa Indonesia</div>
+  <h1>SQL dari<br>Nol ke Jago</h1>
+  <p>Database sederhana, syntax lengkap, output nyata. Belajar SQL tanpa ribet.</p>
+
+  <div class="db-schema">
+    <div class="table-pill">
+      <div class="tname">📦 products</div>
+      <div class="tcol"><span>id</span>, name, category, price, stock</div>
+    </div>
+    <div class="table-pill">
+      <div class="tname">👤 customers</div>
+      <div class="tcol"><span>id</span>, name, city, email</div>
+    </div>
+    <div class="table-pill">
+      <div class="tname">🧾 orders</div>
+      <div class="tcol"><span>id</span>, customer_id, product_id, qty, total</div>
+    </div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav>
+  <a href="#insert" class="nav-item">INSERT</a>
+  <a href="#update" class="nav-item">UPDATE</a>
+  <a href="#alter" class="nav-item">ALTER</a>
+  <a href="#select" class="nav-item">SELECT</a>
+  <a href="#orderby" class="nav-item">ORDER BY</a>
+  <a href="#groupby" class="nav-item">GROUP BY</a>
+  <a href="#innerjoin" class="nav-item">INNER JOIN</a>
+  <a href="#leftjoin" class="nav-item">LEFT JOIN</a>
+  <a href="#view" class="nav-item">VIEW</a>
+  <a href="#trigger" class="nav-item">TRIGGER</a>
+</nav>
+
+<main>
+
+  <!-- ===== INSERT ===== -->
+  <section class="section" id="insert">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">INSERT</h2>
+      <span class="tag tag-dml">DML</span>
+    </div>
+    <p class="desc">
+      <strong>INSERT</strong> digunakan untuk menambah data baru ke dalam tabel. Bayangkan kayak nulis data baru ke dalam buku catatan.
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Tambah data produk</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">products</span> (<span class="col">id</span>, <span class="col">name</span>, <span class="col">category</span>, <span class="col">price</span>, <span class="col">stock</span>)
+<span class="kw">VALUES</span>
+  (<span class="num">1</span>, <span class="str">'Laptop ASUS'</span>,  <span class="str">'Elektronik'</span>, <span class="num">8500000</span>, <span class="num">10</span>),
+  (<span class="num">2</span>, <span class="str">'Mouse Logitech'</span>,<span class="str">'Elektronik'</span>, <span class="num">350000</span>,  <span class="num">50</span>),
+  (<span class="num">3</span>, <span class="str">'Meja Kayu'</span>,     <span class="str">'Furnitur'</span>,  <span class="num">1200000</span>, <span class="num">5</span>),
+  (<span class="num">4</span>, <span class="str">'Kursi Ergonomis'</span>,<span class="str">'Furnitur'</span>,  <span class="num">2300000</span>, <span class="num">8</span>);
+
+<span class="cmt">-- Tambah data pelanggan</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">customers</span> (<span class="col">id</span>, <span class="col">name</span>, <span class="col">city</span>, <span class="col">email</span>)
+<span class="kw">VALUES</span>
+  (<span class="num">1</span>, <span class="str">'Budi Santoso'</span>, <span class="str">'Jakarta'</span>, <span class="str">'budi@email.com'</span>),
+  (<span class="num">2</span>, <span class="str">'Siti Rahayu'</span>,  <span class="str">'Surabaya'</span>,<span class="str">'siti@email.com'</span>),
+  (<span class="num">3</span>, <span class="str">'Andi Wijaya'</span>,  <span class="str">'Bandung'</span>, <span class="str">'andi@email.com'</span>);
+
+<span class="cmt">-- Tambah data pesanan</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">orders</span> (<span class="col">id</span>, <span class="col">customer_id</span>, <span class="col">product_id</span>, <span class="col">qty</span>, <span class="col">total</span>)
+<span class="kw">VALUES</span>
+  (<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">8500000</span>),
+  (<span class="num">2</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">700000</span>),
+  (<span class="num">3</span>, <span class="num">3</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">1200000</span>),
+  (<span class="num">4</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">2300000</span>);</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — Tabel products</div>
+      <table>
+        <tr><th>id</th><th>name</th><th>category</th><th>price</th><th>stock</th></tr>
+        <tr><td class="id-val">1</td><td class="str-val">Laptop ASUS</td><td class="str-val">Elektronik</td><td class="num-val">8,500,000</td><td class="num-val">10</td></tr>
+        <tr><td class="id-val">2</td><td class="str-val">Mouse Logitech</td><td class="str-val">Elektronik</td><td class="num-val">350,000</td><td class="num-val">50</td></tr>
+        <tr><td class="id-val">3</td><td class="str-val">Meja Kayu</td><td class="str-val">Furnitur</td><td class="num-val">1,200,000</td><td class="num-val">5</td></tr>
+        <tr><td class="id-val">4</td><td class="str-val">Kursi Ergonomis</td><td class="str-val">Furnitur</td><td class="num-val">2,300,000</td><td class="num-val">8</td></tr>
+      </table>
+    </div>
+    <div class="info-box">4 baris berhasil ditambahkan ke tabel <code>products</code>. Query mengembalikan: <strong>4 rows affected</strong></div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== UPDATE ===== -->
+  <section class="section" id="update">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">UPDATE</h2>
+      <span class="tag tag-dml">DML</span>
+    </div>
+    <p class="desc">
+      <strong>UPDATE</strong> digunakan untuk mengubah data yang sudah ada. Jangan lupa pakai <strong>WHERE</strong>, kalau tidak semua baris akan ikut berubah!
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Naikkan harga Laptop ASUS jadi 9.000.000</span>
+<span class="kw">UPDATE</span> <span class="tbl">products</span>
+<span class="kw">SET</span>    <span class="col">price</span> <span class="op">=</span> <span class="num">9000000</span>, <span class="col">stock</span> <span class="op">=</span> <span class="num">15</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="num">1</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — Setelah UPDATE</div>
+      <table>
+        <tr><th>id</th><th>name</th><th>price (sebelum)</th><th>price (sesudah)</th><th>stock</th></tr>
+        <tr><td class="id-val">1</td><td class="str-val">Laptop ASUS</td><td style="color:#ef4444;text-decoration:line-through">8,500,000</td><td style="color:#10b981;font-weight:700">9,000,000</td><td class="num-val">15</td></tr>
+      </table>
+    </div>
+    <div class="info-box">Hanya baris dengan <code>id = 1</code> yang berubah. <strong>1 row affected.</strong></div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== ALTER TABLE ===== -->
+  <section class="section" id="alter">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">ALTER TABLE</h2>
+      <span class="tag tag-ddl">DDL</span>
+    </div>
+    <p class="desc">
+      <strong>ALTER TABLE</strong> digunakan untuk mengubah struktur tabel — menambah kolom baru, menghapus kolom, atau mengubah tipe data. Kayak renovasi rumah!
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Tambah kolom 'discount' ke tabel products</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">products</span>
+<span class="kw">ADD COLUMN</span> <span class="col">discount</span> <span class="fn">DECIMAL</span>(<span class="num">5</span>,<span class="num">2</span>) <span class="kw">DEFAULT</span> <span class="num">0</span>;
+
+<span class="cmt">-- Ubah tipe kolom 'stock' menjadi BIGINT</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">products</span>
+<span class="kw">MODIFY COLUMN</span> <span class="col">stock</span> <span class="fn">BIGINT</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — Struktur tabel products setelah ALTER</div>
+      <table>
+        <tr><th>Field</th><th>Type</th><th>Default</th><th>Keterangan</th></tr>
+        <tr><td class="col">id</td><td>INT</td><td>—</td><td>Tidak berubah</td></tr>
+        <tr><td class="col">name</td><td>VARCHAR</td><td>—</td><td>Tidak berubah</td></tr>
+        <tr><td class="col">category</td><td>VARCHAR</td><td>—</td><td>Tidak berubah</td></tr>
+        <tr><td class="col">price</td><td>DECIMAL</td><td>—</td><td>Tidak berubah</td></tr>
+        <tr><td class="col">stock</td><td style="color:#10b981">BIGINT ✓</td><td>—</td><td style="color:#10b981">Tipe diubah</td></tr>
+        <tr><td class="col">discount</td><td style="color:#10b981">DECIMAL(5,2) ✓</td><td>0</td><td style="color:#10b981">Kolom baru!</td></tr>
+      </table>
+    </div>
+    <div class="info-box">Kolom <code>discount</code> berhasil ditambahkan. Semua baris lama otomatis mendapat nilai default = <code>0</code>.</div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== ORDER BY ===== -->
+  <section class="section" id="orderby">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">ORDER BY</h2>
+      <span class="tag tag-select">SELECT</span>
+    </div>
+    <p class="desc">
+      <strong>ORDER BY</strong> mengurutkan hasil query. Gunakan <strong>ASC</strong> (kecil ke besar) atau <strong>DESC</strong> (besar ke kecil).
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Tampilkan produk dari harga termahal ke termurah</span>
+<span class="kw">SELECT</span> <span class="col">name</span>, <span class="col">category</span>, <span class="col">price</span>
+<span class="kw">FROM</span>   <span class="tbl">products</span>
+<span class="kw">ORDER BY</span> <span class="col">price</span> <span class="kw">DESC</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — 4 rows returned</div>
+      <table>
+        <tr><th>#</th><th>name</th><th>category</th><th>price</th></tr>
+        <tr><td class="num-val">1</td><td class="str-val">Laptop ASUS</td><td class="str-val">Elektronik</td><td class="num-val">9,000,000</td></tr>
+        <tr><td class="num-val">2</td><td class="str-val">Kursi Ergonomis</td><td class="str-val">Furnitur</td><td class="num-val">2,300,000</td></tr>
+        <tr><td class="num-val">3</td><td class="str-val">Meja Kayu</td><td class="str-val">Furnitur</td><td class="num-val">1,200,000</td></tr>
+        <tr><td class="num-val">4</td><td class="str-val">Mouse Logitech</td><td class="str-val">Elektronik</td><td class="num-val">350,000</td></tr>
+      </table>
+    </div>
+    <div class="info-box">Data terurut dari harga 9.000.000 (paling mahal) ke 350.000 (paling murah).</div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== GROUP BY ===== -->
+  <section class="section" id="groupby">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">GROUP BY</h2>
+      <span class="tag tag-select">SELECT</span>
+    </div>
+    <p class="desc">
+      <strong>GROUP BY</strong> mengelompokkan data berdasarkan kolom tertentu. Biasanya dikombinasikan dengan fungsi agregat seperti <strong>COUNT, SUM, AVG</strong>.
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Hitung jumlah produk & rata-rata harga per kategori</span>
+<span class="kw">SELECT</span>
+  <span class="col">category</span>,
+  <span class="fn">COUNT</span>(<span class="op">*</span>)        <span class="kw">AS</span> <span class="col">jumlah_produk</span>,
+  <span class="fn">AVG</span>(<span class="col">price</span>)      <span class="kw">AS</span> <span class="col">rata_harga</span>,
+  <span class="fn">SUM</span>(<span class="col">stock</span>)      <span class="kw">AS</span> <span class="col">total_stok</span>
+<span class="kw">FROM</span>   <span class="tbl">products</span>
+<span class="kw">GROUP BY</span> <span class="col">category</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — 2 rows returned (2 kategori)</div>
+      <table>
+        <tr><th>category</th><th>jumlah_produk</th><th>rata_harga</th><th>total_stok</th></tr>
+        <tr><td class="str-val">Elektronik</td><td class="num-val">2</td><td class="num-val">4,675,000</td><td class="num-val">65</td></tr>
+        <tr><td class="str-val">Furnitur</td><td class="num-val">2</td><td class="num-val">1,750,000</td><td class="num-val">13</td></tr>
+      </table>
+    </div>
+    <div class="info-box">Data 4 produk berhasil diringkas menjadi 2 baris berdasarkan kategorinya. Rata-rata harga Elektronik = (9.000.000 + 350.000) ÷ 2.</div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== INNER JOIN ===== -->
+  <section class="section" id="innerjoin">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">INNER JOIN</h2>
+      <span class="tag tag-select">SELECT</span>
+    </div>
+    <p class="desc">
+      <strong>INNER JOIN</strong> menggabungkan dua tabel dan hanya menampilkan baris yang <strong>ada di kedua tabel</strong>. Kalau salah satu tidak cocok, tidak akan muncul.
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Tampilkan pesanan beserta nama pelanggan & nama produk</span>
+<span class="kw">SELECT</span>
+  <span class="tbl">o</span>.<span class="col">id</span>         <span class="kw">AS</span> <span class="col">order_id</span>,
+  <span class="tbl">c</span>.<span class="col">name</span>       <span class="kw">AS</span> <span class="col">pelanggan</span>,
+  <span class="tbl">p</span>.<span class="col">name</span>       <span class="kw">AS</span> <span class="col">produk</span>,
+  <span class="tbl">o</span>.<span class="col">qty</span>,
+  <span class="tbl">o</span>.<span class="col">total</span>
+<span class="kw">FROM</span>        <span class="tbl">orders</span>    <span class="kw">AS</span> <span class="tbl">o</span>
+<span class="kw">INNER JOIN</span>  <span class="tbl">customers</span> <span class="kw">AS</span> <span class="tbl">c</span>  <span class="kw">ON</span> <span class="tbl">o</span>.<span class="col">customer_id</span> <span class="op">=</span> <span class="tbl">c</span>.<span class="col">id</span>
+<span class="kw">INNER JOIN</span>  <span class="tbl">products</span>  <span class="kw">AS</span> <span class="tbl">p</span>  <span class="kw">ON</span> <span class="tbl">o</span>.<span class="col">product_id</span>  <span class="op">=</span> <span class="tbl">p</span>.<span class="col">id</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — 4 rows returned</div>
+      <table>
+        <tr><th>order_id</th><th>pelanggan</th><th>produk</th><th>qty</th><th>total</th></tr>
+        <tr><td class="id-val">1</td><td class="str-val">Budi Santoso</td><td class="str-val">Laptop ASUS</td><td class="num-val">1</td><td class="num-val">9,000,000</td></tr>
+        <tr><td class="id-val">2</td><td class="str-val">Siti Rahayu</td><td class="str-val">Mouse Logitech</td><td class="num-val">2</td><td class="num-val">700,000</td></tr>
+        <tr><td class="id-val">3</td><td class="str-val">Andi Wijaya</td><td class="str-val">Meja Kayu</td><td class="num-val">1</td><td class="num-val">1,200,000</td></tr>
+        <tr><td class="id-val">4</td><td class="str-val">Budi Santoso</td><td class="str-val">Kursi Ergonomis</td><td class="num-val">1</td><td class="num-val">2,300,000</td></tr>
+      </table>
+    </div>
+    <div class="info-box">3 tabel digabung sekaligus! Data dari <code>orders</code>, <code>customers</code>, dan <code>products</code> tersambung lewat kolom ID yang cocok.</div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== LEFT JOIN ===== -->
+  <section class="section" id="leftjoin">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">LEFT JOIN</h2>
+      <span class="tag tag-select">SELECT</span>
+    </div>
+    <p class="desc">
+      <strong>LEFT JOIN</strong> menampilkan <strong>semua data dari tabel kiri</strong>, meskipun tidak ada pasangan di tabel kanan. Yang tidak punya pasangan akan tampil sebagai <code>NULL</code>.
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Tambah pelanggan baru yang belum pernah pesan</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">customers</span> <span class="kw">VALUES</span> (<span class="num">4</span>, <span class="str">'Dewi Kusuma'</span>, <span class="str">'Medan'</span>, <span class="str">'dewi@email.com'</span>);
+
+<span class="cmt">-- LEFT JOIN: tampilkan semua pelanggan + pesanan mereka</span>
+<span class="kw">SELECT</span>
+  <span class="tbl">c</span>.<span class="col">name</span>    <span class="kw">AS</span> <span class="col">pelanggan</span>,
+  <span class="tbl">c</span>.<span class="col">city</span>,
+  <span class="tbl">o</span>.<span class="col">id</span>      <span class="kw">AS</span> <span class="col">order_id</span>,
+  <span class="tbl">o</span>.<span class="col">total</span>
+<span class="kw">FROM</span>      <span class="tbl">customers</span> <span class="kw">AS</span> <span class="tbl">c</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">orders</span>    <span class="kw">AS</span> <span class="tbl">o</span>  <span class="kw">ON</span> <span class="tbl">c</span>.<span class="col">id</span> <span class="op">=</span> <span class="tbl">o</span>.<span class="col">customer_id</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — 5 rows returned (Dewi muncul walau belum pesan!)</div>
+      <table>
+        <tr><th>pelanggan</th><th>city</th><th>order_id</th><th>total</th></tr>
+        <tr><td class="str-val">Budi Santoso</td><td class="str-val">Jakarta</td><td class="id-val">1</td><td class="num-val">9,000,000</td></tr>
+        <tr><td class="str-val">Budi Santoso</td><td class="str-val">Jakarta</td><td class="id-val">4</td><td class="num-val">2,300,000</td></tr>
+        <tr><td class="str-val">Siti Rahayu</td><td class="str-val">Surabaya</td><td class="id-val">2</td><td class="num-val">700,000</td></tr>
+        <tr><td class="str-val">Andi Wijaya</td><td class="str-val">Bandung</td><td class="id-val">3</td><td class="num-val">1,200,000</td></tr>
+        <tr><td class="str-val" style="color:#f59e0b">Dewi Kusuma ★</td><td class="str-val">Medan</td><td class="null-val">NULL</td><td class="null-val">NULL</td></tr>
+      </table>
+    </div>
+    <div class="info-box">Dewi Kusuma tetap muncul meskipun belum pernah memesan, dengan nilai <code>NULL</code> di kolom order. Inilah perbedaan utama LEFT JOIN vs INNER JOIN.</div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== VIEW ===== -->
+  <section class="section" id="view">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2 class="section-title">VIEW</h2>
+      <span class="tag tag-special">SPECIAL</span>
+    </div>
+    <p class="desc">
+      <strong>VIEW</strong> adalah "tabel virtual" yang menyimpan sebuah query. Kita bisa memanggilnya kapan saja seperti tabel biasa — tanpa harus nulis query panjang berulang-ulang.
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Buat VIEW ringkasan pesanan</span>
+<span class="kw">CREATE VIEW</span> <span class="tbl">v_ringkasan_pesanan</span> <span class="kw">AS</span>
+  <span class="kw">SELECT</span>
+    <span class="tbl">c</span>.<span class="col">name</span>       <span class="kw">AS</span> <span class="col">pelanggan</span>,
+    <span class="tbl">c</span>.<span class="col">city</span>,
+    <span class="fn">COUNT</span>(<span class="tbl">o</span>.<span class="col">id</span>)  <span class="kw">AS</span> <span class="col">total_order</span>,
+    <span class="fn">SUM</span>(<span class="tbl">o</span>.<span class="col">total</span>) <span class="kw">AS</span> <span class="col">total_belanja</span>
+  <span class="kw">FROM</span>      <span class="tbl">customers</span> <span class="tbl">c</span>
+  <span class="kw">LEFT JOIN</span> <span class="tbl">orders</span>    <span class="tbl">o</span>  <span class="kw">ON</span> <span class="tbl">c</span>.<span class="col">id</span> <span class="op">=</span> <span class="tbl">o</span>.<span class="col">customer_id</span>
+  <span class="kw">GROUP BY</span>  <span class="tbl">c</span>.<span class="col">id</span>, <span class="tbl">c</span>.<span class="col">name</span>, <span class="tbl">c</span>.<span class="col">city</span>;
+
+<span class="cmt">-- Gunakan VIEW semudah SELECT dari tabel biasa</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">v_ringkasan_pesanan</span>
+<span class="kw">ORDER BY</span> <span class="col">total_belanja</span> <span class="kw">DESC</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — v_ringkasan_pesanan</div>
+      <table>
+        <tr><th>pelanggan</th><th>city</th><th>total_order</th><th>total_belanja</th></tr>
+        <tr><td class="str-val">Budi Santoso</td><td class="str-val">Jakarta</td><td class="num-val">2</td><td class="num-val">11,300,000</td></tr>
+        <tr><td class="str-val">Andi Wijaya</td><td class="str-val">Bandung</td><td class="num-val">1</td><td class="num-val">1,200,000</td></tr>
+        <tr><td class="str-val">Siti Rahayu</td><td class="str-val">Surabaya</td><td class="num-val">1</td><td class="num-val">700,000</td></tr>
+        <tr><td class="str-val">Dewi Kusuma</td><td class="str-val">Medan</td><td class="num-val">0</td><td class="null-val">NULL</td></tr>
+      </table>
+    </div>
+    <div class="info-box">View <code>v_ringkasan_pesanan</code> menyimpan query kompleks. Kita tinggal panggil <code>SELECT * FROM v_ringkasan_pesanan</code> kapanpun — simpel!</div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== TRIGGER ===== -->
+  <section class="section" id="trigger">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2 class="section-title">TRIGGER</h2>
+      <span class="tag tag-special">SPECIAL</span>
+    </div>
+    <p class="desc">
+      <strong>TRIGGER</strong> adalah aksi otomatis yang berjalan ketika ada INSERT, UPDATE, atau DELETE. Bayangkan seperti alarm — kalau ada kejadian tertentu, trigger langsung bereaksi sendiri.
+    </p>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">SQL Query</span></div>
+      <pre><span class="cmt">-- Buat tabel log untuk mencatat perubahan stok</span>
+<span class="kw">CREATE TABLE</span> <span class="tbl">log_stok</span> (
+  <span class="col">id</span>          <span class="fn">INT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="col">product_id</span>  <span class="fn">INT</span>,
+  <span class="col">stok_lama</span>   <span class="fn">INT</span>,
+  <span class="col">stok_baru</span>   <span class="fn">INT</span>,
+  <span class="col">waktu</span>       <span class="fn">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">NOW</span>()
+);
+
+<span class="cmt">-- Buat TRIGGER: otomatis catat log saat stok diupdate</span>
+<span class="kw">CREATE TRIGGER</span> <span class="tbl">trg_update_stok</span>
+<span class="kw">AFTER UPDATE ON</span> <span class="tbl">products</span>
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">IF</span> <span class="fn">OLD</span>.<span class="col">stock</span> <span class="op">!=</span> <span class="fn">NEW</span>.<span class="col">stock</span> <span class="kw">THEN</span>
+    <span class="kw">INSERT INTO</span> <span class="tbl">log_stok</span> (<span class="col">product_id</span>, <span class="col">stok_lama</span>, <span class="col">stok_baru</span>)
+    <span class="kw">VALUES</span> (<span class="fn">NEW</span>.<span class="col">id</span>, <span class="fn">OLD</span>.<span class="col">stock</span>, <span class="fn">NEW</span>.<span class="col">stock</span>);
+  <span class="kw">END IF</span>;
+<span class="kw">END</span>;
+
+<span class="cmt">-- Simulasi: update stok Mouse Logitech</span>
+<span class="kw">UPDATE</span> <span class="tbl">products</span>
+<span class="kw">SET</span>    <span class="col">stock</span> <span class="op">=</span> <span class="num">45</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="num">2</span>;
+
+<span class="cmt">-- Lihat log yang otomatis tercatat</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">log_stok</span>;</pre>
+    </div>
+    <div class="output-block">
+      <div class="output-header">Output — log_stok (terisi otomatis tanpa ditulis manual!)</div>
+      <table>
+        <tr><th>id</th><th>product_id</th><th>stok_lama</th><th>stok_baru</th><th>waktu</th></tr>
+        <tr><td class="id-val">1</td><td class="num-val">2</td><td style="color:#ef4444">50</td><td style="color:#10b981">45</td><td style="color:#6272a4">2024-01-15 10:32:17</td></tr>
+      </table>
+    </div>
+    <div class="info-box">Saat <code>UPDATE products SET stock = 45</code> dijalankan, trigger langsung otomatis menyimpan log perubahan ke tabel <code>log_stok</code> — tanpa kita tulis INSERT-nya!</div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="color:#6272a4;font-family:'Space Mono',monospace;font-size:0.75rem">
+    ✦ SQL GUIDE · 9 Syntax Lengkap · Database Toko Online ✦
+  </p>
+</footer>
+
+<script>
+  // Intersection Observer for scroll animations
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
